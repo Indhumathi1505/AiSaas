@@ -1,0 +1,6 @@
+{
+  "name": "Nexus AI Workspace",
+  "description": "Enterprise-Grade AI SaaS Workspace with Copilot, Document AI, PDF AI, Financial Intelligence, and Workspace Analytics powered by Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
