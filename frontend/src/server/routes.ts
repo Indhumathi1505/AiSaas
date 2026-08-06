@@ -18,7 +18,11 @@ export const apiRouter = Router();
 // ==========================================
 
 apiRouter.post('/auth/login', (req: Request, res: Response) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
+  // Basic authentication check
+  if (!email || !password || (email !== 'abi@gmail.com' && email !== store.user.email)) {
+    return res.status(401).json({ error: 'Invalid email or password' });
+  }
   if (email) {
     store.user.email = email;
   }
@@ -194,7 +198,9 @@ ${textContent.slice(0, 4000)}`;
       config: { responseMimeType: 'application/json' },
     });
 
-    const parsed = JSON.parse(response.text || '{}');
+    const responseText = response.text || '{}';
+    const jsonString = responseText.replace(/```json\n?|\n?```/g, '').trim();
+    const parsed = JSON.parse(jsonString);
     if (parsed.pageSummaries && Array.isArray(parsed.pageSummaries)) pageSummaries = parsed.pageSummaries;
     if (parsed.flashcards && Array.isArray(parsed.flashcards)) flashcards = parsed.flashcards;
     if (parsed.mcqs && Array.isArray(parsed.mcqs)) mcqs = parsed.mcqs;
@@ -449,9 +455,27 @@ Provide personalized financial advice for an individual user in JSON format with
       config: { responseMimeType: 'application/json' },
     });
 
-    const parsed = JSON.parse(response.text || '{}');
+    const responseText = response.text || '{}';
+    const jsonString = responseText.replace(/```json\n?|\n?```/g, '').trim();
+    const parsed = JSON.parse(jsonString);
+    let healthScoreVal = parsed.healthScore;
+    if (typeof healthScoreVal === 'object' && healthScoreVal !== null) {
+      healthScoreVal = healthScoreVal.score || 85;
+    }
+    
+    // Defensively convert any other nested objects to strings to prevent React rendering crashes
+    for (const key in parsed) {
+      if (key !== 'healthScore' && typeof parsed[key] === 'object' && parsed[key] !== null) {
+        try {
+          parsed[key] = JSON.stringify(parsed[key]);
+        } catch (e) {
+          parsed[key] = String(parsed[key]);
+        }
+      }
+    }
+
     res.json({
-      healthScore: parsed.healthScore || (netSavings >= 0 ? 88 : 55),
+      healthScore: healthScoreVal || (netSavings >= 0 ? 88 : 55),
       cashFlowStatus: parsed.cashFlowStatus || (netSavings >= 0 ? 'Healthy Positive Cash Flow' : 'Deficit Warning'),
       expensePredictionNextMonth: parsed.expensePredictionNextMonth || (totalExpense > 0 ? totalExpense * 1.02 : 1200),
       whereToSpendMore: parsed.whereToSpendMore || (totalIncome > 0
@@ -570,7 +594,12 @@ Return JSON:
       config: { responseMimeType: 'application/json' },
     });
 
-    const result = JSON.parse(response.text || '{}');
+    const responseText = response.text || '{}';
+    const jsonString = responseText.replace(/```json\n?|\n?```/g, '').trim();
+    const result = JSON.parse(jsonString);
+    if (typeof result.score === 'object' && result.score !== null) {
+      result.score = result.score.score || 0;
+    }
     res.json(result);
   } catch (e) {
     res.json({

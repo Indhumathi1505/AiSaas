@@ -66,35 +66,58 @@ export const PdfAiWorkspace: React.FC = () => {
 
     setIsUploading(true);
 
-    const reader = new FileReader();
+    try {
+      let textContent = '';
 
-    reader.onload = async (event) => {
-      const textContent = (event.target?.result as string) || '';
-
-      try {
-        const res = await fetch('/api/pdf/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: file.name,
-            extractedText: textContent.length > 0 ? textContent : `Document: ${file.name}\nExtracted text file uploaded by user.`,
-          }),
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        // Dynamically load pdf.js from CDN
+        const pdfjsLib: any = await new Promise((resolve, reject) => {
+          if ((window as any).pdfjsLib) return resolve((window as any).pdfjsLib);
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          script.onload = () => {
+            (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            resolve((window as any).pdfjsLib);
+          };
+          script.onerror = () => reject(new Error('Failed to load PDF.js'));
+          document.head.appendChild(script);
         });
-        const newPdf = await res.json();
-        setActivePdf(newPdf);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsUploading(false);
+
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const pageText = content.items.map((item: any) => item.str).join(' ');
+          fullText += `\n${pageText}\n`;
+        }
+        textContent = fullText;
+      } else {
+        // Read as text for other formats like .txt, .md, .csv
+        textContent = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (event) => resolve((event.target?.result as string) || '');
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
       }
-    };
 
-    reader.onerror = () => {
+      const res = await fetch('/api/pdf/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          extractedText: textContent.trim().length > 0 ? textContent : `Document: ${file.name}\nNo text extracted.`,
+        }),
+      });
+      const newPdf = await res.json();
+      setActivePdf(newPdf);
+    } catch (err) {
+      console.error('Error uploading file:', err);
+    } finally {
       setIsUploading(false);
-    };
-
-    // Read as text
-    reader.readAsText(file);
+    }
   };
 
   return (

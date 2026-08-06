@@ -175,7 +175,23 @@ public class FinanceController {
                 "Provide personalized financial advice for an individual user in JSON format with keys: healthScore, cashFlowStatus, expensePredictionNextMonth, whereToSpendMore, whereToSpendLess, savingsRecommendation, explanation.";
 
             String aiRes = geminiService.generateContent(prompt, "application/json");
+            aiRes = aiRes.replaceAll("(?s)```json\\n?|\\n?```", "").trim();
             res = mapper.readValue(aiRes, Map.class);
+            if (res.get("healthScore") instanceof Map) {
+                Map<String, Object> scoreMap = (Map<String, Object>) res.get("healthScore");
+                res.put("healthScore", scoreMap.getOrDefault("score", res.getOrDefault("healthScore", 85)));
+            }
+            
+            // Defensively convert any other nested objects to strings to prevent React rendering crashes
+            for (Map.Entry<String, Object> entry : res.entrySet()) {
+                if (entry.getValue() instanceof Map) {
+                    try {
+                        entry.setValue(mapper.writeValueAsString(entry.getValue()));
+                    } catch (Exception ex) {
+                        entry.setValue(entry.getValue().toString());
+                    }
+                }
+            }
         } catch (Exception e) {
             res.put("healthScore", netSavings >= 0 ? 85 : 60);
             res.put("cashFlowStatus", netSavings >= 0 ? "Healthy Cash Flow" : "Expenses Exceed Income");

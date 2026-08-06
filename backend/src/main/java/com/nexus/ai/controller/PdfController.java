@@ -98,9 +98,21 @@ public class PdfController {
                 (textContent.length() > 4000 ? textContent.substring(0, 4000) : textContent);
 
             String responseText = geminiService.generateContent(prompt, "application/json");
+            responseText = responseText.replaceAll("(?s)```json\\n?|\\n?```", "").trim();
             Map<String, Object> parsed = mapper.readValue(responseText, Map.class);
             
-            // For brevity, not fully mapping the parsed JSON. The existing Node version also fell back to defaults if parsing failed.
+            if (parsed.containsKey("pageSummaries")) {
+                pageSummaries = mapper.convertValue(parsed.get("pageSummaries"), new com.fasterxml.jackson.core.type.TypeReference<List<PdfDocument.PageSummary>>(){});
+            }
+            if (parsed.containsKey("flashcards")) {
+                flashcards = mapper.convertValue(parsed.get("flashcards"), new com.fasterxml.jackson.core.type.TypeReference<List<PdfDocument.Flashcard>>(){});
+            }
+            if (parsed.containsKey("mcqs")) {
+                mcqs = mapper.convertValue(parsed.get("mcqs"), new com.fasterxml.jackson.core.type.TypeReference<List<PdfDocument.Mcq>>(){});
+            }
+            if (parsed.containsKey("notes")) {
+                notes = mapper.convertValue(parsed.get("notes"), new com.fasterxml.jackson.core.type.TypeReference<List<String>>(){});
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

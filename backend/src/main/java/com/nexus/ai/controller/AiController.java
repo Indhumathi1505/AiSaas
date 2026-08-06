@@ -89,7 +89,13 @@ public class AiController {
         try {
             String prompt = "Analyze the following text for grammar, spelling, clarity, and tone issues:\n\"" + text + "\"\nReturn JSON with keys: score, summary, corrections (array of {original, suggestion, reason})";
             String aiText = geminiService.generateContent(prompt, "application/json");
-            return mapper.readValue(aiText, Map.class);
+            aiText = aiText.replaceAll("(?s)```json\\n?|\\n?```", "").trim();
+            Map<String, Object> result = mapper.readValue(aiText, Map.class);
+            if (result.get("score") instanceof Map) {
+                Map<String, Object> scoreMap = (Map<String, Object>) result.get("score");
+                result.put("score", scoreMap.getOrDefault("score", 0));
+            }
+            return result;
         } catch (Exception e) {
             Map<String, Object> res = new HashMap<>();
             res.put("score", 0);
@@ -105,6 +111,7 @@ public class AiController {
         try {
             String prompt = "Provide a rich dictionary definition for the term: \"" + word + "\". Return JSON with keys: word, phonetic, partOfSpeech, definition, examples, synonyms, antonyms.";
             String aiText = geminiService.generateContent(prompt, "application/json");
+            aiText = aiText.replaceAll("(?s)```json\\n?|\\n?```", "").trim();
             return mapper.readValue(aiText, Map.class);
         } catch (Exception e) {
             Map<String, Object> res = new HashMap<>();
