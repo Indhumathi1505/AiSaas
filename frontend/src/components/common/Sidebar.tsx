@@ -12,6 +12,7 @@ import {
   Settings,
   Sparkles,
   Layers,
+  Database,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -21,6 +22,7 @@ export const Sidebar: React.FC = () => {
 
   const navItems = [
     { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
+    { id: 'sql', label: 'AI SQL Generator', icon: Database, badge: 'NEW' },
     { id: 'documents', label: 'AI Document Workspace', icon: FileText, badge: 'AI' },
     { id: 'pdf', label: 'PDF AI Intelligence', icon: FileSearch },
     { id: 'finance', label: 'AI Finance Tracker', icon: TrendingUp },

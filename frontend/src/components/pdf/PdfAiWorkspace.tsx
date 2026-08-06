@@ -213,8 +213,16 @@ export const PdfAiWorkspace: React.FC = () => {
 
           {/* Right: PDF AI Intelligence Tools */}
           <div className="w-1/2 bg-white flex flex-col overflow-hidden">
+            {/* Hint Banner */}
+            <div className="bg-purple-50 border-b border-purple-100 px-4 py-2 flex items-center justify-between text-[11px] text-purple-700 font-medium">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                <span>AI auto-generates Flashcards, MCQs, and Summaries! Click the tabs below to explore.</span>
+              </div>
+            </div>
+
             {/* Tool Tabs */}
-            <div className="p-3 border-b border-slate-200 bg-slate-50 flex space-x-1 text-xs font-semibold">
+            <div className="p-3 border-b border-slate-200 bg-slate-50 flex flex-wrap gap-1 text-xs font-semibold">
               <button
                 onClick={() => setActiveTab('chat')}
                 className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition-colors ${

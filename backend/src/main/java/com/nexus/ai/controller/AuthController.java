@@ -29,6 +29,7 @@ public class AuthController {
         String email = body.get("email");
         String password = body.get("password");
         String name = body.get("name");
+        String avatarUrl = body.get("avatarUrl");
 
         if (email == null || password == null || name == null) {
             res.put("error", "Name, email, and password are required.");
@@ -47,7 +48,7 @@ public class AuthController {
         user.setName(name);
         user.setEmail(email);
         user.setPassword(password); // in production, hash this password
-        user.setAvatarUrl("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250");
+        user.setAvatarUrl(avatarUrl != null && !avatarUrl.trim().isEmpty() ? avatarUrl : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250");
         user.setRole("WORKSPACE_MEMBER");
         user.setTwoFactorEnabled(false);
         user.setCreatedAt(Instant.now().toString());

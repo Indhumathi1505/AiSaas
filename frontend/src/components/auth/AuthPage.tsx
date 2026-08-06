@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Lock, Mail, User, ArrowRight, Activity, ShieldCheck, Sparkles } from 'lucide-react';
+import { Lock, Mail, User, ArrowRight, Activity, ShieldCheck, Sparkles, Settings, Image as ImageIcon } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
   const { login, signup } = useApp();
@@ -9,6 +9,7 @@ export const AuthPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,7 +23,7 @@ export const AuthPage: React.FC = () => {
         await login(email, password);
       } else {
         if (!name) throw new Error('Name is required');
-        await signup(name, email, password);
+        await signup(name, email, password, avatarUrl);
       }
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
@@ -119,6 +120,24 @@ export const AuthPage: React.FC = () => {
                     </div>
                   )}
 
+                  {!isLogin && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1.5">Avatar URL (Optional)</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <ImageIcon className="h-5 w-5 text-slate-500" />
+                        </div>
+                        <input
+                          type="url"
+                          value={avatarUrl}
+                          onChange={(e) => setAvatarUrl(e.target.value)}
+                          className="block w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                          placeholder="https://example.com/your-image.jpg"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1.5">Email Address</label>
                     <div className="relative">
@@ -182,6 +201,13 @@ export const AuthPage: React.FC = () => {
                       {isLogin ? 'Sign up' : 'Log in'}
                     </button>
                   </p>
+                </div>
+                
+                <div className="mt-4 text-center">
+                  <a href="/admin" className="text-slate-500 hover:text-slate-300 text-xs flex items-center justify-center space-x-1 transition-colors">
+                    <Settings className="w-3.5 h-3.5" />
+                    <span>Access Admin Portal</span>
+                  </a>
                 </div>
               </motion.div>
             </AnimatePresence>

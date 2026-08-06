@@ -384,6 +384,7 @@ export const DocumentWorkspace: React.FC = () => {
             <option value="project_report">Project Status Report</option>
             <option value="resume">Resume / CV Section</option>
             <option value="checklist">Action Checklist</option>
+            <option value="sql">SQL Query</option>
           </select>
           <input
             type="text"

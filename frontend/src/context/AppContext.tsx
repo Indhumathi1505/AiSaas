@@ -60,7 +60,7 @@ interface AppContextType {
   markNotificationsRead: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string, avatarUrl?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -109,11 +109,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUser(data.user);
   };
 
-  const signup = async (name: string, email: string, password: string) => {
+  const signup = async (name: string, email: string, password: string, avatarUrl?: string) => {
     const data = await fetchJson('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, avatarUrl }),
     });
     setToken(data.token);
     localStorage.setItem('nexus_auth_token', data.token);

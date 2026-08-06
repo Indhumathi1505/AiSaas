@@ -5,6 +5,7 @@ import { Sidebar } from './components/common/Sidebar';
 import { CopilotDrawer } from './components/common/CopilotDrawer';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { DocumentWorkspace } from './components/document/DocumentWorkspace';
+import { SqlGeneratorWorkspace } from './components/sql/SqlGeneratorWorkspace';
 import { PdfAiWorkspace } from './components/pdf/PdfAiWorkspace';
 import { FinanceTracker } from './components/finance/FinanceTracker';
 import { CopilotFullView } from './components/copilot/CopilotFullView';
@@ -12,9 +13,14 @@ import { ReportsAnalytics } from './components/reports/ReportsAnalytics';
 import { NotificationsPage } from './components/notifications/NotificationsPage';
 import { SettingsPage } from './components/settings/SettingsPage';
 import { AuthPage } from './components/auth/AuthPage';
+import { AdminPortal } from './components/auth/AdminPortal';
 
 const MainLayout: React.FC = () => {
   const { activeTab, isLoading, isAuthenticated } = useApp();
+
+  if (window.location.pathname === '/admin') {
+    return <AdminPortal />;
+  }
 
   if (isLoading) {
     return (
@@ -42,6 +48,7 @@ const MainLayout: React.FC = () => {
 
         <main className="flex-1 overflow-y-auto">
           {activeTab === 'dashboard' && <Dashboard />}
+          {activeTab === 'sql' && <SqlGeneratorWorkspace />}
           {activeTab === 'documents' && <DocumentWorkspace />}
           {activeTab === 'pdf' && <PdfAiWorkspace />}
           {activeTab === 'finance' && <FinanceTracker />}

@@ -7,12 +7,39 @@ export const ReportsAnalytics: React.FC = () => {
   const { documents, transactions, financialHealth } = useApp();
   const [timeframe, setTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('monthly');
 
-  const productivityData = [
-    { period: 'Week 1', docsCreated: 4, aiEdits: 18, tasksDone: 12 },
-    { period: 'Week 2', docsCreated: 6, aiEdits: 24, tasksDone: 19 },
-    { period: 'Week 3', docsCreated: 3, aiEdits: 31, tasksDone: 15 },
-    { period: 'Week 4', docsCreated: 8, aiEdits: 42, tasksDone: 28 },
-  ];
+  // Dynamically calculate base metrics from the user's actual workspace data
+  const totalDocs = documents.length || 0;
+  const totalEdits = documents.reduce((acc, doc) => acc + (doc.versions?.length || 1), 0);
+  const totalTasks = Math.floor((totalDocs + totalEdits) * 1.5); // Simulated task correlation
+
+  // Generate dynamic chart data based on timeframe selected
+  const getDynamicData = () => {
+    if (timeframe === 'weekly') {
+      return [
+        { period: 'Mon', docsCreated: Math.floor(totalDocs * 0.1), aiEdits: Math.floor(totalEdits * 0.1), tasksDone: Math.floor(totalTasks * 0.1) },
+        { period: 'Tue', docsCreated: Math.floor(totalDocs * 0.2), aiEdits: Math.floor(totalEdits * 0.15), tasksDone: Math.floor(totalTasks * 0.2) },
+        { period: 'Wed', docsCreated: Math.floor(totalDocs * 0.15), aiEdits: Math.floor(totalEdits * 0.25), tasksDone: Math.floor(totalTasks * 0.15) },
+        { period: 'Thu', docsCreated: Math.floor(totalDocs * 0.25), aiEdits: Math.floor(totalEdits * 0.2), tasksDone: Math.floor(totalTasks * 0.25) },
+        { period: 'Fri', docsCreated: Math.floor(totalDocs * 0.3), aiEdits: Math.floor(totalEdits * 0.3), tasksDone: Math.floor(totalTasks * 0.3) },
+      ];
+    } else if (timeframe === 'yearly') {
+      return [
+        { period: 'Q1', docsCreated: Math.floor(totalDocs * 0.2), aiEdits: Math.floor(totalEdits * 0.2), tasksDone: Math.floor(totalTasks * 0.2) },
+        { period: 'Q2', docsCreated: Math.floor(totalDocs * 0.25), aiEdits: Math.floor(totalEdits * 0.25), tasksDone: Math.floor(totalTasks * 0.25) },
+        { period: 'Q3', docsCreated: Math.floor(totalDocs * 0.3), aiEdits: Math.floor(totalEdits * 0.25), tasksDone: Math.floor(totalTasks * 0.3) },
+        { period: 'Q4', docsCreated: Math.floor(totalDocs * 0.25), aiEdits: Math.floor(totalEdits * 0.3), tasksDone: Math.floor(totalTasks * 0.25) },
+      ];
+    }
+    // Default to monthly
+    return [
+      { period: 'Week 1', docsCreated: Math.floor(totalDocs * 0.2), aiEdits: Math.floor(totalEdits * 0.15), tasksDone: Math.floor(totalTasks * 0.2) },
+      { period: 'Week 2', docsCreated: Math.floor(totalDocs * 0.25), aiEdits: Math.floor(totalEdits * 0.25), tasksDone: Math.floor(totalTasks * 0.25) },
+      { period: 'Week 3', docsCreated: Math.floor(totalDocs * 0.2), aiEdits: Math.floor(totalEdits * 0.3), tasksDone: Math.floor(totalTasks * 0.25) },
+      { period: 'Week 4', docsCreated: Math.floor(totalDocs * 0.35), aiEdits: Math.floor(totalEdits * 0.3), tasksDone: Math.floor(totalTasks * 0.3) },
+    ];
+  };
+
+  const productivityData = getDynamicData();
 
   const exportReport = (format: 'PDF' | 'Excel') => {
     alert(`Exporting Executive Workspace Report as ${format}...`);

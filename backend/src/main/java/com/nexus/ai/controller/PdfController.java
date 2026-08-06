@@ -29,7 +29,9 @@ public class PdfController {
     @Autowired
     private GeminiService geminiService;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper()
+        .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS, true);
 
     @GetMapping
     public List<PdfDocument> getPdfs() {
@@ -98,7 +100,11 @@ public class PdfController {
                 (textContent.length() > 4000 ? textContent.substring(0, 4000) : textContent);
 
             String responseText = geminiService.generateContent(prompt, "application/json");
-            responseText = responseText.replaceAll("(?s)```json\\n?|\\n?```", "").trim();
+            int start = responseText.indexOf('{');
+            int end = responseText.lastIndexOf('}');
+            if (start != -1 && end != -1 && end >= start) {
+                responseText = responseText.substring(start, end + 1);
+            }
             Map<String, Object> parsed = mapper.readValue(responseText, Map.class);
             
             if (parsed.containsKey("pageSummaries")) {
@@ -115,6 +121,7 @@ public class PdfController {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            notes.add("Note: Detailed AI extraction failed or was incomplete. " + e.getMessage());
         }
 
         int estimatedPages = Math.max(1, (int) Math.ceil((double) textContent.length() / 800));
@@ -141,7 +148,7 @@ public class PdfController {
         PdfChatMessage welcomeMsg = new PdfChatMessage();
         welcomeMsg.setId("msg_welcome_" + System.currentTimeMillis());
         welcomeMsg.setSender("ai");
-        welcomeMsg.setText("I have analyzed \"" + newPdf.getFilename() + "\". Ask me any question, request page summaries, flashcards, or a deep explanation based on this document!");
+        welcomeMsg.setText("I have analyzed \"" + newPdf.getFilename() + "\". You can ask me any question here in the chat, or **click the tabs at the top** (Page Summaries, Flashcards, MCQs, Key Notes) to view the AI-generated study materials!");
         welcomeMsg.setTimestamp(Instant.now().toString());
         msgs.add(welcomeMsg);
         history.setMessages(msgs);
@@ -179,7 +186,8 @@ public class PdfController {
         aiMsg.setPageReference(1);
 
         try {
-            String prompt = "You are a strict PDF AI assistant. You must answer the user question based ONLY on the provided PDF content below. Give clear, detailed explanations and quote key lines if appropriate.\n\n" +
+            String prompt = "You are a strict PDF AI assistant. You must answer the user question based ONLY on the provided PDF content below. Give clear, detailed explanations and quote key lines if appropriate.\n" +
+                "If the user asks for flashcards, MCQs, summaries, or quizzes, politely inform them that these are automatically generated and can be accessed by clicking the tabs (Flashcards, MCQs & Quiz, etc.) at the top of the workspace.\n\n" +
                 "PDF Document Title: " + pdf.getFilename() + "\n" +
                 "PDF Content:\n" + pdf.getExtractedText() + "\n\n" +
                 "User Question: " + question;

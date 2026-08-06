@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   DollarSign,
   Activity,
+  Database,
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
@@ -78,6 +79,13 @@ export const Dashboard: React.FC = () => {
             >
               <Plus className="w-4 h-4" />
               <span>New Note</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('sql')}
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center space-x-2"
+            >
+              <Database className="w-4 h-4" />
+              <span>SQL Generator</span>
             </button>
             <button
               onClick={() => setIsCopilotOpen(true)}

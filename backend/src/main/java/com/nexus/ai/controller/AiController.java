@@ -147,7 +147,14 @@ public class AiController {
         String context = body.getOrDefault("context", "Enterprise SaaS environment");
         Map<String, String> res = new HashMap<>();
         try {
-            String prompt = "Generate a comprehensive, professionally formatted Markdown document of type \"" + type + "\" for topic: \"" + topic + "\". Context: " + context + ". Use structured headers, bullet points, and high quality content.";
+            String prompt;
+            if ("sql".equalsIgnoreCase(type)) {
+                prompt = "You are an SQL generator. Your ONLY purpose is to output SQL code.\n\n" +
+                         "Convert the following request into a valid SQL query:\n" + topic + "\n\n" +
+                         "Respond with ONLY the raw SQL query. Do not add markdown like ```sql. Do not say 'Here is your query' or provide explanations. Just output the SQL.";
+            } else {
+                prompt = "Generate a comprehensive, professionally formatted Markdown document of type \"" + type + "\" for topic: \"" + topic + "\". Context: " + context + ". Use structured headers, bullet points, and high quality content.";
+            }
             res.put("generatedContent", geminiService.generateContent(prompt));
         } catch (Exception e) {
             res.put("generatedContent", "AI Error: " + e.getMessage());
